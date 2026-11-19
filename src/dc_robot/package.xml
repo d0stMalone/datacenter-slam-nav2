@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>my_robot</name>
+  <name>dc_robot</name>
   <version>0.1.0</version>
   <description>
-    Custom differential-drive robot for Gazebo Classic: URDF/Xacro model, warehouse world,
-    and launch/config files for simulation, SLAM (slam_toolbox) and navigation (Nav2).
+    dc_robot (data-centre robot): a differential-drive base for Gazebo Classic: URDF/Xacro model,
+    data-hall and data-centre worlds, and launch/config files for SLAM (slam_toolbox) and Nav2.
   </description>
   <maintainer email="visariakeval@gmail.com">Keval Visaria</maintainer>
   <license>MIT</license>
@@ -38,7 +38,7 @@
 
   <export>
     <build_type>ament_python</build_type>
-    <!-- Lets Gazebo resolve package://my_robot/... URIs -->
+    <!-- Lets Gazebo resolve package://dc_robot/... URIs -->
     <gazebo_ros gazebo_model_path="${prefix}/.."/>
   </export>
 </package>

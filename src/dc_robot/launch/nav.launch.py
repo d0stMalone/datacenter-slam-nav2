@@ -2,19 +2,19 @@
 
 Run the simulation first, then this:
 
-    ros2 launch my_robot sim.launch.py rviz:=false
-    ros2 launch my_robot nav.launch.py
+    ros2 launch dc_robot sim.launch.py rviz:=false
+    ros2 launch dc_robot nav.launch.py
 
 For another world, pass the same name to both (it selects maps/<world>.yaml and
 maps/<world>_keepout.yaml):
 
-    ros2 launch my_robot sim.launch.py world:=datacenter rviz:=false
-    ros2 launch my_robot nav.launch.py world:=datacenter
+    ros2 launch dc_robot sim.launch.py world:=datacenter rviz:=false
+    ros2 launch dc_robot nav.launch.py world:=datacenter
 
 Navigate while mapping an unknown place (slam_toolbox instead of map_server + AMCL; Nav2
 plans on the growing SLAM map and dodges obstacles with the live lidar):
 
-    ros2 launch my_robot nav.launch.py slam:=true keepout:=false
+    ros2 launch dc_robot nav.launch.py slam:=true keepout:=false
 
 In RViz: the robot starts localised (AMCL initial pose = default spawn). Click
 "Nav2 Goal" and drag on the map to send the robot somewhere.
@@ -47,7 +47,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    pkg = get_package_share_directory('my_robot')
+    pkg = get_package_share_directory('dc_robot')
     nav2_bringup = get_package_share_directory('nav2_bringup')
 
     use_sim_time = LaunchConfiguration('use_sim_time')

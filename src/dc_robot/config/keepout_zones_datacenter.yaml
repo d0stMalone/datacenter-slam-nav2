@@ -1,8 +1,8 @@
 # Keep-out and avoid zones for the full data-centre world (worlds/datacenter.world).
 #
 # Same format as keepout_zones.yaml (see that file for the rules). After editing:
-#   python3 src/my_robot/scripts/generate_keepout_mask.py \
-#       --zones src/my_robot/config/keepout_zones_datacenter.yaml --map src/my_robot/maps/datacenter.yaml
+#   python3 src/dc_robot/scripts/generate_keepout_mask.py \
+#       --zones src/dc_robot/config/keepout_zones_datacenter.yaml --map src/dc_robot/maps/datacenter.yaml
 #   colcon build --symlink-install
 # Coordinates are world metres; the rectangles were taken from datacenter_layout() in
 # scripts/generate_worlds.py (if you change the building there, update these too).

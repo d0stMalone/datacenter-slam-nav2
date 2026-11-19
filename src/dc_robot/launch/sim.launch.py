@@ -1,9 +1,9 @@
-"""Bring up the simulation: Gazebo + a world + my_robot.
+"""Bring up the simulation: Gazebo + a world + dc_robot.
 
-    ros2 launch my_robot sim.launch.py                       # data hall, Gazebo GUI + RViz
-    ros2 launch my_robot sim.launch.py world:=warehouse      # the other built-in world
-    ros2 launch my_robot sim.launch.py gui:=false            # headless physics (faster)
-    ros2 launch my_robot sim.launch.py x:=0.0 y:=-5.0 yaw:=1.57
+    ros2 launch dc_robot sim.launch.py                       # data hall, Gazebo GUI + RViz
+    ros2 launch dc_robot sim.launch.py world:=warehouse      # the other built-in world
+    ros2 launch dc_robot sim.launch.py gui:=false            # headless physics (faster)
+    ros2 launch dc_robot sim.launch.py x:=0.0 y:=-5.0 yaw:=1.57
 
 Starts:
   1. gzserver (physics + sensors) with the world, and optionally gzclient (the 3D window)
@@ -21,7 +21,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-PKG_SHARE = get_package_share_directory('my_robot')
+PKG_SHARE = get_package_share_directory('dc_robot')
 
 # Built-in worlds and a known-free spawn pose (x, y, yaw) in each.
 WORLD_SPAWNS = {
@@ -70,11 +70,11 @@ def launch_setup(context):
     spawn = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
-        name='spawn_my_robot',
+        name='spawn_dc_robot',
         output='screen',
         arguments=[
             '-topic', 'robot_description',
-            '-entity', 'my_robot',
+            '-entity', 'dc_robot',
             # z = base_link height = wheel radius, +1 cm so the robot drops onto the floor.
             '-x', x, '-y', y, '-z', '0.06', '-Y', yaw,
         ],

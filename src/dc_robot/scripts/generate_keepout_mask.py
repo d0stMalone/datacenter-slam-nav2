@@ -7,8 +7,8 @@ Nav2's map_server publishes it on /keepout_filter_mask and the costmaps' Keepout
 writes it on top of the normal costs.
 
 Usage (from the workspace root):
-    python3 src/my_robot/scripts/generate_keepout_mask.py \
-        [--zones src/my_robot/config/keepout_zones.yaml] [--map src/my_robot/maps/datahall.yaml]
+    python3 src/dc_robot/scripts/generate_keepout_mask.py \
+        [--zones src/dc_robot/config/keepout_zones.yaml] [--map src/dc_robot/maps/datahall.yaml]
 Writes maps/<map name>_keepout.pgm and .yaml next to the map.
 """
 import argparse

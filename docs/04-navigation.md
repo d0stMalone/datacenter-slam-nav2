@@ -3,7 +3,7 @@
 **Goal:** given the map from Phase 3, click a point in RViz and have the robot drive there on
 its own: localise on the map, plan a path around the racks, follow it, and recover if stuck.
 
-Files added in `src/my_robot`:
+Files added in `src/dc_robot`:
 
 | File | Purpose |
 |---|---|
@@ -204,13 +204,13 @@ Because it's in **both** costmaps:
 
 ![keep-out zones on the global costmap](images/costmap_keepout_zones.png)
 
-**To change zones:** edit `src/my_robot/config/keepout_zones.yaml`, then
+**To change zones:** edit `src/dc_robot/config/keepout_zones.yaml`, then
 
 ```bash
-cd ~/ros2_ws && python3 src/my_robot/scripts/generate_keepout_mask.py && colcon build --symlink-install
+cd ~/ros2_ws && python3 src/dc_robot/scripts/generate_keepout_mask.py && colcon build --symlink-install
 ```
 
-and restart `nav.launch.py`. To run without zones: `ros2 launch my_robot nav.launch.py keepout:=false`.
+and restart `nav.launch.py`. To run without zones: `ros2 launch dc_robot nav.launch.py keepout:=false`.
 
 ## 4. Planner and controller
 
@@ -373,10 +373,10 @@ The live TF `map → base_link` is always current.
 
 ```bash
 # T1: simulation
-ros2 launch my_robot sim.launch.py rviz:=false
+ros2 launch dc_robot sim.launch.py rviz:=false
 
 # T2: Nav2 + RViz
-ros2 launch my_robot nav.launch.py
+ros2 launch dc_robot nav.launch.py
 ```
 
 Wait ~10 s for `Managed nodes are active` in T2. In RViz:

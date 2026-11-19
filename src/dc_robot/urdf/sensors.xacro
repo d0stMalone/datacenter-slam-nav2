@@ -2,7 +2,7 @@
 <!--
   Sensors: 2D lidar and RGB camera. Each has a URDF link (for TF / RViz) and a Gazebo
   <sensor> block whose ROS plugin publishes the data.
-  Uses properties defined in my_robot.urdf.xacro.
+  Uses properties defined in dc_robot.urdf.xacro.
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 

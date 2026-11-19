@@ -3,7 +3,7 @@ import os
 
 from setuptools import setup
 
-package_name = 'my_robot'
+package_name = 'dc_robot'
 
 
 def share(subdir, pattern='*'):
@@ -30,7 +30,7 @@ setup(
     zip_safe=True,
     maintainer='Keval Visaria',
     maintainer_email='visariakeval@gmail.com',
-    description='Custom diff-drive robot: description, Gazebo world, SLAM and Nav2 configs.',
+    description='dc_robot (data-centre robot): URDF, Gazebo worlds, SLAM and Nav2 configs.',
     license='MIT',
     tests_require=['pytest'],
     entry_points={'console_scripts': []},

@@ -1,15 +1,15 @@
 # Phase 2: Custom robot and data-hall world
 
-**Goal:** replace the borrowed TurtleBot3 with our own robot, `my_robot`, in our own
+**Goal:** replace the borrowed TurtleBot3 with our own robot, `dc_robot`, in our own
 environment, and make it speak the standard ROS interfaces (`/cmd_vel`, `/odom`, `/scan`, TF)
 so that everything built later (SLAM, Nav2, our nodes) works unchanged.
 
-Package: `src/my_robot` (ament_python: no C++ to compile; the package installs files).
+Package: `src/dc_robot` (ament_python: no C++ to compile; the package installs files).
 
 ```
-my_robot/
+dc_robot/
 ├── urdf/
-│   ├── my_robot.urdf.xacro    # body, wheels, caster; all dimensions as properties
+│   ├── dc_robot.urdf.xacro    # body, wheels, caster; all dimensions as properties
 │   ├── inertial_macros.xacro  # inertia formulas
 │   ├── sensors.xacro          # lidar + camera (links + Gazebo sensor plugins)
 │   └── gazebo.xacro           # friction, colours, diff_drive & joint_state plugins
@@ -195,7 +195,7 @@ much wider to keep up, which makes localisation slower and less certain.
 (lists of `Box`, `Cylinder`, `wall(...)`), so the layout is readable and easy to change:
 
 ```bash
-python3 src/my_robot/scripts/generate_worlds.py    # regenerate after editing a layout
+python3 src/dc_robot/scripts/generate_worlds.py    # regenerate after editing a layout
 ```
 
 ### Layout: 20 × 14 m (x ∈ [−10, 10], y ∈ [−7, 7])
@@ -270,7 +270,7 @@ the physics faster and more stable. Sensors attached to lumped links keep their 
 
 Try it:
 ```bash
-ros2 launch my_robot sim.launch.py                       # data hall + RViz
+ros2 launch dc_robot sim.launch.py                       # data hall + RViz
 ros2 run teleop_twist_keyboard teleop_twist_keyboard     # i / j / l / k
 ros2 run tf2_tools view_frames                           # writes frames.pdf
 ```

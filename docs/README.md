@@ -6,7 +6,7 @@ the design decisions (and the bugs found along the way), and how to verify it yo
 | Phase | Topic | Key concepts |
 |---|---|---|
 | [1. Environment](01-environment.md) | ROS 2 / Gazebo / Nav2 install and smoke test | ROS graph, TF, sim time |
-| [2. Robot & world](02-robot-and-world.md) | `my_robot` URDF, sensors, Gazebo plugins, data-hall world | URDF/Xacro, inertia, diff drive, REP-105 frames |
+| [2. Robot & world](02-robot-and-world.md) | `dc_robot` URDF, sensors, Gazebo plugins, data-hall world | URDF/Xacro, inertia, diff drive, REP-105 frames |
 | [3. SLAM](03-slam.md) | Mapping the data hall with slam_toolbox (99.9 % map precision) | Graph SLAM, scan matching, loop closure, occupancy grids, perceptual aliasing |
 | [4. Navigation](04-navigation.md) | Nav2 + AMCL on the saved map, straight centred paths, keep-out zones (≤ 10 cm localisation error) | AMCL particle filter, costmaps & inflation, keep-out filters, Theta\* vs NavFn, planner vs controller, actions, behaviour trees, lifecycle nodes |
 | 5. Autonomy | *planned* | Frontier exploration, Nav2 Simple Commander |
@@ -18,7 +18,7 @@ the design decisions (and the bugs found along the way), and how to verify it yo
 flowchart LR
     subgraph Gazebo["Gazebo (physics simulation)"]
         W[datahall.world]
-        R[my_robot<br/>diff_drive + lidar + camera plugins]
+        R[dc_robot<br/>diff_drive + lidar + camera plugins]
     end
     R -- /scan --> SLAM[slam_toolbox]
     R -- "/odom, TF odom→base_link" --> SLAM

@@ -1,4 +1,4 @@
-# slam_toolbox (online, asynchronous) parameters for my_robot.
+# slam_toolbox (online, asynchronous) parameters for dc_robot.
 #
 # Starts from slam_toolbox's mapper_params_online_async.yaml. Every value changed from that
 # default is marked  # TUNED  with the reason. See docs/03-slam.md (workspace root) for an explanation of the

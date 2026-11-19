@@ -18,8 +18,8 @@ from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
-    pkg_share = get_package_share_directory('my_robot')
-    xacro_file = os.path.join(pkg_share, 'urdf', 'my_robot.urdf.xacro')
+    pkg_share = get_package_share_directory('dc_robot')
+    xacro_file = os.path.join(pkg_share, 'urdf', 'dc_robot.urdf.xacro')
 
     use_sim_time = LaunchConfiguration('use_sim_time')
 

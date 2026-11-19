@@ -23,8 +23,8 @@ git clone <this repo> .
 rosdep install --from-paths src -y --ignore-src
 colcon build --symlink-install && source install/setup.bash
 
-ros2 launch my_robot sim.launch.py rviz:=false      # terminal 1: Gazebo
-ros2 launch my_robot nav.launch.py                  # terminal 2: Nav2 + RViz, click "Nav2 Goal"
+ros2 launch dc_robot sim.launch.py rviz:=false      # terminal 1: Gazebo
+ros2 launch dc_robot nav.launch.py                  # terminal 2: Nav2 + RViz, click "Nav2 Goal"
 ```
 
 ## Documentation

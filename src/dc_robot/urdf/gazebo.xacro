@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
   Gazebo-only settings: surface friction, colours, and the plugins that connect the simulated
-  robot to ROS. Uses properties defined in my_robot.urdf.xacro.
+  robot to ROS. Uses properties defined in dc_robot.urdf.xacro.
 -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 

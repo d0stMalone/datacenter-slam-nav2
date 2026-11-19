@@ -2,13 +2,13 @@
 
 Run it alongside the simulation:
 
-    ros2 launch my_robot sim.launch.py rviz:=false     # terminal 1: Gazebo + robot
-    ros2 launch my_robot slam.launch.py                # terminal 2: SLAM + mapping RViz
+    ros2 launch dc_robot sim.launch.py rviz:=false     # terminal 1: Gazebo + robot
+    ros2 launch dc_robot slam.launch.py                # terminal 2: SLAM + mapping RViz
     ros2 run teleop_twist_keyboard teleop_twist_keyboard  # terminal 3: drive
 
 Save the finished map (from the workspace root):
 
-    ros2 run nav2_map_server map_saver_cli -f src/my_robot/maps/datahall
+    ros2 run nav2_map_server map_saver_cli -f src/dc_robot/maps/datahall
 
 slam_toolbox subscribes to /scan and the odom->base_link TF, and publishes:
   * /map            nav_msgs/OccupancyGrid (the map image)
@@ -25,7 +25,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    pkg_share = get_package_share_directory('my_robot')
+    pkg_share = get_package_share_directory('dc_robot')
     use_sim_time = LaunchConfiguration('use_sim_time')
 
     return LaunchDescription([

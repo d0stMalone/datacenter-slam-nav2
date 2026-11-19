@@ -1,4 +1,4 @@
-# Nav2 view for my_robot: derived from nav2_bringup/rviz/nav2_default_view.rviz
+# Nav2 view for dc_robot: derived from nav2_bringup/rviz/nav2_default_view.rviz
 # (TurtleBot-only displays removed; top-down view centred on the data hall).
 Panels:
 - Class: rviz_common/Displays

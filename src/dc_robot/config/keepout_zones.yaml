@@ -1,7 +1,7 @@
 # Keep-out and avoid zones for the data hall.
 #
 # Edit this file, then regenerate the mask image and rebuild:
-#   python3 src/my_robot/scripts/generate_keepout_mask.py
+#   python3 src/dc_robot/scripts/generate_keepout_mask.py
 #   colcon build --symlink-install
 #
 # Coordinates are WORLD coordinates (the same as in the .world file / Gazebo), in metres.

@@ -1,10 +1,10 @@
-# Nav2 parameters for my_robot in the data hall.
+# Nav2 parameters for dc_robot in the data hall.
 #
 # Started from nav2_bringup/params/nav2_params.yaml (Humble, tuned for a TurtleBot3).
 # Every value changed for this robot/world is marked "# TUNED: reason".
 # Explanations: docs/04-navigation.md
 #
-# Robot facts these numbers come from (urdf/my_robot.urdf.xacro):
+# Robot facts these numbers come from (urdf/dc_robot.urdf.xacro):
 #   base_link = midpoint of the drive axle (= rotation centre), NOT the body centre.
 #   body extends x: -0.23 .. +0.13 m (camera at the front), y: -0.18 .. +0.18 m (wheels).
 #   circumscribed radius (farthest corner from base_link) ~ 0.29 m.

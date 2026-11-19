@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  my_robot: a compact differential-drive base.
+  dc_robot (data-centre robot): a compact differential-drive base.
 
   Frame layout (REP-105 style):
     base_link       : midpoint between the drive wheels, at axle height. This is the robot's
@@ -12,7 +12,7 @@
 
   Footprint ~ 0.34 m (x) x 0.35 m (y); Nav2 uses these numbers in Phase 4.
 -->
-<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="dc_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:include filename="inertial_macros.xacro"/>
 

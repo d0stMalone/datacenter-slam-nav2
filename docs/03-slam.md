@@ -3,7 +3,7 @@
 **Goal:** drive the robot around an unknown environment and build an accurate 2D map of it,
 then save that map so Phase 4 can navigate on it.
 
-Files added in `src/my_robot`:
+Files added in `src/dc_robot`:
 
 | File | Purpose |
 |---|---|
@@ -170,10 +170,10 @@ turn. Found with a ground-truth plugin and fixed with sphere wheel collisions. F
 
 ```bash
 # T1: simulation (RViz off; SLAM brings its own layout)
-ros2 launch my_robot sim.launch.py rviz:=false
+ros2 launch dc_robot sim.launch.py rviz:=false
 
 # T2: SLAM + mapping RViz
-ros2 launch my_robot slam.launch.py
+ros2 launch dc_robot slam.launch.py
 
 # T3: drive (keep this terminal focused): i forward, j/l turn, k stop, q/z speed up/down
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
@@ -211,7 +211,7 @@ Save the map from the workspace root (overwrites the provided one):
 
 ```bash
 cd ~/ros2_ws
-ros2 run nav2_map_server map_saver_cli -f src/my_robot/maps/datahall
+ros2 run nav2_map_server map_saver_cli -f src/dc_robot/maps/datahall
 colcon build --symlink-install     # installs new map files
 ```
 
