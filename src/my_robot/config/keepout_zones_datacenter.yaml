@@ -1,0 +1,65 @@
+# Keep-out and avoid zones for the full data-centre world (worlds/datacenter.world).
+#
+# Same format as keepout_zones.yaml (see that file for the rules). After editing:
+#   python3 src/my_robot/scripts/generate_keepout_mask.py \
+#       --zones src/my_robot/config/keepout_zones_datacenter.yaml --map src/my_robot/maps/datacenter.yaml
+#   colcon build --symlink-install
+# Coordinates are world metres; the rectangles were taken from datacenter_layout() in
+# scripts/generate_worlds.py (if you change the building there, update these too).
+
+world_to_map_offset: [4.95, 2.75]     # = minus the spawn point (-4.95, -2.75)
+
+zones:
+  - name: electrical_rooms
+    reason: switchgear / transformer rooms along the north side (high voltage)
+    cost: 100
+    buffer: 0.4
+    polygon: [[-71.25, 13.5], [81.25, 13.5], [81.25, 19.0], [-71.25, 19.0]]
+
+  - name: core_plant_west
+    reason: pump and heat-exchanger rooms in the core
+    cost: 100
+    buffer: 0.4
+    polygon: [[-3.95, -16.5], [3.55, -16.5], [3.55, 11.0], [-3.95, 11.0]]
+
+  - name: core_plant_east
+    reason: pump and heat-exchanger rooms in the core
+    cost: 100
+    buffer: 0.4
+    polygon: [[6.55, -16.5], [14.05, -16.5], [14.05, 11.0], [6.55, 11.0]]
+
+  - name: gallery_W_north
+    reason: CRAH maintenance gallery behind the fan wall; pass through, don't travel along it
+    cost: 50
+    buffer: 0.0
+    polygon: [[-68.75, 8.0], [-3.95, 8.0], [-3.95, 11.0], [-68.75, 11.0]]
+
+  - name: gallery_W_south
+    reason: CRAH maintenance gallery behind the fan wall; pass through, don't travel along it
+    cost: 50
+    buffer: 0.0
+    polygon: [[-68.75, -16.5], [-3.95, -16.5], [-3.95, -13.5], [-68.75, -13.5]]
+
+  - name: gallery_E1_north
+    reason: CRAH maintenance gallery behind the fan wall; pass through, don't travel along it
+    cost: 50
+    buffer: 0.0
+    polygon: [[14.05, 8.0], [47.65, 8.0], [47.65, 11.0], [14.05, 11.0]]
+
+  - name: gallery_E1_south
+    reason: CRAH maintenance gallery behind the fan wall; pass through, don't travel along it
+    cost: 50
+    buffer: 0.0
+    polygon: [[14.05, -16.5], [47.65, -16.5], [47.65, -13.5], [14.05, -13.5]]
+
+  - name: gallery_E2_north
+    reason: CRAH maintenance gallery behind the fan wall; pass through, don't travel along it
+    cost: 50
+    buffer: 0.0
+    polygon: [[47.65, 8.0], [81.25, 8.0], [81.25, 11.0], [47.65, 11.0]]
+
+  - name: gallery_E2_south
+    reason: CRAH maintenance gallery behind the fan wall; pass through, don't travel along it
+    cost: 50
+    buffer: 0.0
+    polygon: [[47.65, -16.5], [81.25, -16.5], [81.25, -13.5], [47.65, -13.5]]

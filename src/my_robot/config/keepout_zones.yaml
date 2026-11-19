@@ -1,0 +1,43 @@
+# Keep-out and avoid zones for the data hall.
+#
+# Edit this file, then regenerate the mask image and rebuild:
+#   python3 src/my_robot/scripts/generate_keepout_mask.py
+#   colcon build --symlink-install
+#
+# Coordinates are WORLD coordinates (the same as in the .world file / Gazebo), in metres.
+# The map frame was created at the robot's spawn point, so the script converts with
+#   map = world + world_to_map_offset
+# Polygons are lists of [x, y] corners (3 or more, in order around the edge).
+#
+# cost: 100     = keep-out: the planner never routes through it, goals inside are rejected,
+#                 and the controller stops before the robot's body would enter it.
+#       1 .. 99 = avoid: allowed, but each metre inside counts as extra distance, so it is used
+#                 only when the detour around it would be longer. Higher = avoided harder.
+# buffer: metres of fading cost around a zone, so paths don't skim its edge (like inflation).
+
+world_to_map_offset: [6.0, 5.2]     # = minus the spawn point (-6.0, -5.2); see docs/03-slam.md
+
+zones:
+  - name: noc_office
+    reason: staff room, robots not allowed
+    cost: 100
+    buffer: 0.4
+    polygon: [[6.5, 2.6], [9.9, 2.6], [9.9, 6.9], [6.5, 6.9]]
+
+  - name: storage_cage
+    reason: restricted area, locked cage
+    cost: 100
+    buffer: 0.4
+    polygon: [[6.0, -6.9], [9.9, -6.9], [9.9, -4.0], [6.0, -4.0]]
+
+  - name: ups_area
+    reason: high-voltage battery cabinets; 0.4 m service clearance in front of them
+    cost: 100
+    buffer: 0.4
+    polygon: [[-9.9, -6.9], [-5.6, -6.9], [-5.6, -5.65], [-9.9, -5.65]]
+
+  - name: crac_fronts
+    reason: cooling-unit air intakes; don't loiter in the airflow
+    cost: 60
+    buffer: 0.0
+    polygon: [[-8.0, 5.0], [4.5, 5.0], [4.5, 6.0], [-8.0, 6.0]]

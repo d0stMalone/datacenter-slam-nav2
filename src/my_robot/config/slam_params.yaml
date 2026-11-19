@@ -1,0 +1,91 @@
+# slam_toolbox (online, asynchronous) parameters for my_robot.
+#
+# Starts from slam_toolbox's mapper_params_online_async.yaml. Every value changed from that
+# default is marked  # TUNED  with the reason. See docs/03-slam.md (workspace root) for an explanation of the
+# algorithm and of each parameter group.
+
+slam_toolbox:
+  ros__parameters:
+
+    # ---------------- Optimiser (pose-graph back end) ----------------
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+
+    # ---------------- Frames & topics ----------------
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link          # TUNED: our URDF root (TurtleBot3 uses base_footprint)
+    scan_topic: /scan
+    use_map_saver: true
+    mode: mapping
+
+    # ---------------- Timing & map output ----------------
+    debug_logging: false
+    throttle_scans: 1              # process every scan
+    transform_publish_period: 0.02 # publish map->odom at 50 Hz
+    map_update_interval: 2.0       # TUNED (5.0): redraw /map more often; nicer to watch live
+    resolution: 0.05               # 5 cm cells: resolves 1.2 m aisles and 0.25 m columns well
+    min_laser_range: 0.12          # TUNED (0.0): match the lidar's real minimum range
+    max_laser_range: 12.0          # TUNED (20.0): match the lidar (sensors.xacro); beyond this
+                                   #   the readings are 'no return', not obstacles
+    minimum_time_interval: 0.5
+    transform_timeout: 0.2
+    tf_buffer_duration: 30.0
+    stack_size_to_use: 40000000    # needed to serialise large maps
+    enable_interactive_mode: true
+
+    # ---------------- When to add a new scan to the graph ----------------
+    use_scan_matching: true
+    use_scan_barycenter: true
+    minimum_travel_distance: 0.3   # TUNED (0.5): denser nodes in 1.2 m aisles, so turning
+    minimum_travel_heading: 0.3    # TUNED (0.5)   into / out of an aisle is captured well
+    scan_buffer_size: 10
+    scan_buffer_maximum_scan_distance: 10.0
+
+    # ---------------- Scan matching to recent scans ----------------
+    link_match_minimum_response_fine: 0.1
+    link_scan_maximum_distance: 1.5
+
+    # ---------------- Loop closure ----------------
+    # A data hall is the worst case for loop closure: every rack aisle looks the same to a 2D
+    # lidar (perceptual aliasing). A false loop closure would warp the whole map, so we ask
+    # for a stronger match before accepting one.
+    do_loop_closing: true
+    loop_search_maximum_distance: 3.0
+    loop_match_minimum_chain_size: 10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.40   # TUNED (0.35): stricter candidate filter
+    loop_match_minimum_response_fine: 0.50     # TUNED (0.45): stricter final acceptance
+
+    # ---------------- Correlative scan matcher search window ----------------
+    correlation_search_space_dimension: 0.5
+    correlation_search_space_resolution: 0.01
+    correlation_search_space_smear_deviation: 0.1
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+
+    # ---------------- Scan matcher penalties ----------------
+    # TUNED 0.5 -> 0.05 and 1.0 -> 0.1: trust odometry more. The scan matcher scores each
+    # candidate pose by how well the scan fits, times a penalty for straying from the odometry
+    # prediction: 1 - 0.2 * d^2 / variance_penalty. With the defaults, being 25 cm away from
+    # odometry cost only 2.5 %, so in a long featureless corridor (where every position along
+    # it fits equally well) matches drifted towards "barely moved": 1.0 m error after 140 m in
+    # the data-centre corridor. With 0.05 that same 25 cm costs 25 %: 0.4 m error instead.
+    # Our wheel odometry is accurate (<0.1 deg per 90 deg turn), so this is the right trade.
+    distance_variance_penalty: 0.05
+    angle_variance_penalty: 0.1
+    fine_search_angle_offset: 0.00349
+    coarse_search_angle_offset: 0.349
+    coarse_angle_resolution: 0.0349
+    minimum_angle_penalty: 0.9
+    minimum_distance_penalty: 0.5
+    use_response_expansion: true
+
+    # ---------------- Occupancy grid rasterisation ----------------
+    min_pass_through: 2
+    occupancy_threshold: 0.1

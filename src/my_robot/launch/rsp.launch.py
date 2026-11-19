@@ -1,0 +1,44 @@
+"""Robot State Publisher: turns the Xacro model into TF frames.
+
+robot_state_publisher reads the URDF (on the `robot_description` parameter / topic) and
+publishes:
+  * static TFs for fixed joints  (base_link -> laser, base_link -> camera_link, ...)
+  * moving TFs for wheel joints, using angles from /joint_states
+
+Reused by sim.launch.py; it can also run on its own to inspect the model in RViz.
+"""
+import os
+
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import Command, LaunchConfiguration
+from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
+
+
+def generate_launch_description():
+    pkg_share = get_package_share_directory('my_robot')
+    xacro_file = os.path.join(pkg_share, 'urdf', 'my_robot.urdf.xacro')
+
+    use_sim_time = LaunchConfiguration('use_sim_time')
+
+    # Run xacro at launch time so the URDF always matches the installed .xacro files.
+    robot_description = ParameterValue(Command(['xacro ', xacro_file]), value_type=str)
+
+    return LaunchDescription([
+        DeclareLaunchArgument(
+            'use_sim_time', default_value='true',
+            description='Use the /clock published by Gazebo'),
+
+        Node(
+            package='robot_state_publisher',
+            executable='robot_state_publisher',
+            name='robot_state_publisher',
+            output='screen',
+            parameters=[{
+                'robot_description': robot_description,
+                'use_sim_time': use_sim_time,
+            }],
+        ),
+    ])
