@@ -28,6 +28,7 @@ WORLD_SPAWNS = {
     'datahall': ('-6.0', '-5.2', '0.0'),
     'warehouse': ('-5.8', '0.0', '0.0'),
     'datacenter': ('-4.95', '-2.75', '0.0'),   # hall W cross aisle, east end
+    'datacenter_busy': ('-4.95', '-2.75', '0.0'),   # same building + people/ladders/carts
 }
 
 

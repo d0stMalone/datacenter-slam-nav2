@@ -96,6 +96,10 @@ def generate_launch_description():
             'params_file': params_file,
             'autostart': autostart,
             'use_composition': 'True',   # all servers in one process: faster intra-process comms
+            # bringup_launch.py has its own 'slam' argument, evaluated as Python ('not False').
+            # Launch arguments are global, so without this our slam:=false would leak into it
+            # as 'not false' -> NameError.
+            'slam': 'False',
         }.items(),
         condition=UnlessCondition(slam),
     )

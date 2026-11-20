@@ -458,7 +458,127 @@ def datacenter():
     return build_sdf('datacenter', description, shapes, '0 -75 110 0 1.05 1.5708')
 
 
-WORLDS = {'datahall': datahall, 'warehouse': warehouse, 'datacenter': datacenter}
+# --------------------------------------------------------------------------------------------
+# Clutter: people, ladders and carts left in the aisles (world: datacenter_busy)
+#
+# What the robot can see matters: the lidar scans ONE horizontal plane 0.22 m above the floor
+# and the robot is 0.24 m tall. So a standing person is two legs, a step ladder is four thin
+# rails, and a cart is four thin legs plus casters; anything entirely below 0.22 m (a cart's
+# bottom shelf, a ladder's feet) is invisible to it. These objects are built to be realistic,
+# not lidar-friendly, so they test exactly that.
+# --------------------------------------------------------------------------------------------
+LIDAR_Z = 0.22
+
+
+def person_standing(name, x, y, along_x=True):
+    """Technician standing: two legs (what the lidar sees), hi-vis torso, head."""
+    dx, dy = (0.0, 0.11) if along_x else (0.11, 0.0)
+    return [Cylinder(f'{name}_leg_l', x - dx, y - dy, 0.07, 0.85, 'Gazebo/Blue'),
+            Cylinder(f'{name}_leg_r', x + dx, y + dy, 0.07, 0.85, 'Gazebo/Blue'),
+            Box(f'{name}_torso', x, y, *((0.25, 0.42) if along_x else (0.42, 0.25)), 0.62,
+                'Gazebo/Orange', z=1.16),
+            Box(f'{name}_head', x, y, 0.2, 0.2, 0.24, 'Gazebo/DarkYellow', z=1.62)]
+
+
+def person_kneeling(name, x, y, along_x=True):
+    """Technician kneeling at a rack (working on a low server): shins + thighs, torso, head."""
+    lx, ly = (0.6, 0.4) if along_x else (0.4, 0.6)
+    return [Box(f'{name}_legs', x, y, lx, ly, 0.45, 'Gazebo/Blue'),
+            Box(f'{name}_torso', x, y, *((0.3, 0.42) if along_x else (0.42, 0.3)), 0.55,
+                'Gazebo/Orange', z=0.72),
+            Box(f'{name}_head', x, y, 0.2, 0.2, 0.24, 'Gazebo/DarkYellow', z=1.12)]
+
+
+def step_ladder(name, x, y, along_x=True):
+    """A-frame step ladder, 0.5 m wide x 0.75 m deep, 1.8 m tall: 4 rails, steps from 0.3 m up.
+    At the lidar's height it is just four 4 cm rails."""
+    w, d = 0.5, 0.75
+    hx, hy = (d / 2, w / 2) if along_x else (w / 2, d / 2)
+    parts = [Cylinder(f'{name}_rail{i}', x + sx * hx, y + sy * hy, 0.02, 1.8, 'Gazebo/Grey')
+             for i, (sx, sy) in enumerate(((-1, -1), (-1, 1), (1, -1), (1, 1)))]
+    for k, z in enumerate((0.3, 0.55, 0.8, 1.05, 1.3)):     # steps on one side
+        off = -hx * (1 - z / 2.2) if along_x else 0.0
+        offy = 0.0 if along_x else -hy * (1 - z / 2.2)
+        size = (0.1, w) if along_x else (w, 0.1)
+        parts.append(Box(f'{name}_step{k}', x + off, y + offy, *size, 0.03, 'Gazebo/Yellow', z=z))
+    parts.append(Box(f'{name}_top', x, y, *((0.3, w) if along_x else (w, 0.3)), 0.04,
+                     'Gazebo/Yellow', z=1.78))
+    return parts
+
+
+def equipment_cart(name, x, y, along_x=True, load=True):
+    """Equipment / crash cart, 0.9 x 0.5 m: 4 thin legs on casters and three shelves. The bottom
+    shelf (0.185-0.215 m) sits just BELOW the lidar plane: the robot cannot see it."""
+    L, W = 0.9, 0.5
+    hx, hy = (L / 2 - 0.03, W / 2 - 0.03) if along_x else (W / 2 - 0.03, L / 2 - 0.03)
+    sx_, sy_ = (L, W) if along_x else (W, L)
+    parts = []
+    for i, (a, b) in enumerate(((-1, -1), (-1, 1), (1, -1), (1, 1))):
+        parts += [Cylinder(f'{name}_leg{i}', x + a * hx, y + b * hy, 0.015, 0.95, 'Gazebo/Grey'),
+                  Cylinder(f'{name}_caster{i}', x + a * hx, y + b * hy, 0.045, 0.12,
+                           'Gazebo/Black')]
+    for k, z in enumerate((0.20, 0.55, 0.93)):
+        parts.append(Box(f'{name}_shelf{k}', x, y, sx_, sy_, 0.03, 'Gazebo/DarkGrey', z=z))
+    if load:   # a server on the top shelf, a crate of cables on the middle one
+        parts += [Box(f'{name}_server', x, y, *((0.7, 0.45) if along_x else (0.45, 0.7)), 0.09,
+                      'Gazebo/Black', z=0.99),
+                  Box(f'{name}_crate', x, y, 0.35, 0.35, 0.25, 'Gazebo/Red', z=0.69)]
+    return parts
+
+
+def datacenter_clutter():
+    """[(model_name, kind, x, y, along_x)] for datacenter_busy, placed in hall W around the
+    robot's usual routes, in hall E1, and in the core corridor. Shared with the test scripts."""
+    L = datacenter_layout()
+    y = L['y']
+    W, E1 = L['halls']['W'], L['halls']['E1']
+    cross_s, cross_n = y['cross']
+    sp = L['spawn']
+    nb = sum(y['bank_n']) / 2           # middle of the north bank
+    sb = sum(y['bank_s']) / 2           # middle of the south bank
+    cc = sum(L['core_corr']) / 2
+    return [
+        # hall W cross aisle (the main east-west route from the spawn point)
+        ('cart_cross_W', 'cart', sp[0] - 9.0, cross_s + 0.32, True),       # parked by the racks
+        ('person_cross_W', 'standing', sp[0] - 22.0, -2.3, True),            # walking / talking
+        ('ladder_cross_W', 'ladder', W['cold_aisles'][4], cross_n - 0.45, False),  # at aisle mouth
+        # cold aisles of hall W: technicians at work
+        ('tech_kneel_W', 'kneeling', W['cold_aisles'][9] - 0.45, nb - 1.0, False),
+        ('ladder_W', 'ladder', W['cold_aisles'][9] + 0.2, nb + 2.5, False),
+        ('person_W', 'standing', W['cold_aisles'][7], sb + 1.5, False),
+        ('cart_hot_W', 'cart', W['hot_aisles'][10], sb - 2.0, False),           # in a hot aisle
+        # hall E1: an aisle completely blocked by a cart + ladder (forces a detour)
+        ('cart_E1', 'cart', E1['cold_aisles'][2] - 0.25, nb, False),
+        ('ladder_E1', 'ladder', E1['cold_aisles'][2] + 0.4, nb + 0.1, False),
+        ('person_E1', 'standing', E1['cold_aisles'][1], sb, False),
+        # core corridor: a cart left against the wall
+        ('cart_core', 'cart', L['core_corr'][0] + 0.4, -6.0, False),
+        ('person_core', 'standing', cc + 0.6, 4.0, False),
+    ]
+
+
+def datacenter_busy():
+    """The data centre with people, ladders and carts in the aisles. Navigate it with the map
+    of the EMPTY building (nav.launch.py world:=datacenter): the clutter is unmapped."""
+    make = {'standing': person_standing, 'kneeling': person_kneeling,
+            'ladder': step_ladder, 'cart': equipment_cart}
+    extras = [(name, make[kind](name, x, y, along)) for name, kind, x, y, along
+              in datacenter_clutter()]
+    sdf = datacenter().replace('<world name="datacenter">', '<world name="datacenter_busy">')
+    sdf = sdf.replace('datacenter.world: a whole', 'datacenter_busy.world: the data centre + '
+                      'people, ladders and carts in the aisles (each its own model).\n  As '
+                      'datacenter.world: a whole')
+    models = ''.join(f"""
+    <model name="{name}">
+      <static>true</static>
+{chr(10).join(_link(p) for p in parts)}
+    </model>
+""" for name, parts in extras)
+    return sdf.replace('  </world>', models + '  </world>')
+
+
+WORLDS = {'datahall': datahall, 'warehouse': warehouse, 'datacenter': datacenter,
+          'datacenter_busy': datacenter_busy}
 
 
 def main(names):
