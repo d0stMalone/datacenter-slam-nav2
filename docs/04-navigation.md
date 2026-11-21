@@ -62,7 +62,7 @@ Each cycle (every 0.2 m or 0.2 rad of motion):
 2. **Weight (sensor model):** for each particle, ask: *"if the robot were here, how well
    would the current scan fit the map?"* `likelihood_field` precomputes, for every map cell,
    the distance to the nearest wall. A beam ending near a wall scores high. 60 of the 360
-   beams are used (`max_beams`).
+   beams were used (`max_beams`; Phase 4b: 120 of 1440, see [04b](04b-datacenter.md)).
 3. **Resample:** draw a new cloud, picking good particles more often. Bad guesses die out,
    and the cloud tightens around the true pose.
 4. **Adaptive (the "A"):** KLD sampling shrinks the number of particles when the cloud is
@@ -92,6 +92,7 @@ being there. It is built from **layers**, combined in order:
 |---|---|---|
 | `static_layer` | the saved map (`/map`) | global |
 | `obstacle_layer` | live `/scan`: marks obstacles where beams end, clears cells beams pass through | global + local |
+| `voxel_layer` | (Phase 4b) depth camera, in 3D: sees low things the lidar misses, e.g. a cart's bottom shelf ([04b](04b-datacenter.md)) | global + local |
 | `inflation_layer` | spreads cost outwards from every obstacle | global + local |
 
 |  | Global costmap | Local costmap |
@@ -163,6 +164,10 @@ leave the back 1 cm short and the front 9 cm too big. We give the real rectangle
 ```yaml
 footprint: "[[0.13, 0.18], [0.13, -0.18], [-0.23, -0.18], [-0.23, 0.18]]"
 ```
+
+> Phase 4b: the front edge is now 0.18 (camera mast + margin) and the global costmap uses
+> `footprint_padding: 0.05`, so the planner never plans through gaps narrower than the robot.
+> Why that matters for a point planner like Theta*: see [04b, bug 2](04b-datacenter.md#33-four-bugs-found-on-the-way-each-one-made-the-robot-fail).
 
 ### Keep-out and avoid zones (costmap filter)
 

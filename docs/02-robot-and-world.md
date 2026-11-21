@@ -50,8 +50,8 @@ disagreeing.
 | Wheels | r = 0.05 m, separation 0.31 m | |
 | Overall footprint | ≈ 0.34 × 0.35 m | used by Nav2's costmap in Phase 4 |
 | Caster | frictionless sphere r = 0.025 m, at x = −0.18 | stable, no swivel dynamics |
-| Lidar | 360 samples (1°), 0.12–12 m, 10 Hz, σ = 1 cm | similar to an RPLidar A1/A2 |
-| Camera | 640×480, 62° FOV, 15 Hz | demo / future perception |
+| Lidar | 1440 samples (0.25°), 0.12–12 m, 10 Hz, σ = 1 cm | similar to a Hokuyo UST-10LX (was 360 / 1° until Phase 4b, see [04b](04b-datacenter.md)) |
+| Camera | RGB-D (depth), 160×120, 87° FOV, 10 Hz, on a mast 0.32 m up, tilted 20° down | like an Intel RealSense; feeds the costmaps' voxel layer (Phase 4b). Was a 640×480 RGB camera on the chassis |
 
 ### Frames (REP-105)
 
@@ -95,7 +95,7 @@ in the URDF) bridge the two.
 | `libgazebo_ros_diff_drive.so` | `/cmd_vel` (Twist) | `/odom`, TF `odom → base_link` |
 | `libgazebo_ros_joint_state_publisher.so` | | `/joint_states` (wheel angles) |
 | `libgazebo_ros_ray_sensor.so` | | `/scan` (LaserScan, frame `laser`) |
-| `libgazebo_ros_camera.so` | | `/camera/image_raw`, `/camera/camera_info` |
+| `libgazebo_ros_camera.so` (depth) | | `/camera/image_raw`, `/camera/depth/image_raw`, `/camera/points`, `/camera/camera_info` |
 
 ### Differential drive kinematics
 A Twist command has a forward speed *v* (`linear.x`) and a turn rate *ω* (`angular.z`).
@@ -261,7 +261,7 @@ the physics faster and more stable. Sensors attached to lumped links keep their 
 | Check | Result |
 |---|---|
 | Spawn | ✅ about 5 s |
-| `/scan` 10 Hz · `/odom` 50 Hz · `/camera/image_raw` 15 Hz | ✅ |
+| `/scan` 10 Hz · `/odom` 50 Hz · `/camera/image_raw` 15 Hz (10 Hz since the Phase 4b depth camera) | ✅ |
 | Real-time factor in the data hall (178 objects) | ✅ 1.00 |
 | Lidar vs layout: left 1.41 (exp. 1.43), right 0.85 (0.85), behind 3.90 (3.9) m | ✅ |
 | Phantom returns over 20 scans | ✅ 0 |

@@ -28,6 +28,7 @@ What gets started (via nav2_bringup/bringup_launch.py):
     behavior_server     recovery behaviours (spin, back up, wait)
     bt_navigator        behaviour tree tying it together; serves the NavigateToPose action
     waypoint_follower, smoother_server, lifecycle managers
+Also: depth_cloud_relay   /camera/points -> /camera/points_xyz (thin cloud for the voxel layer)
 
 Keep-out zones (added here, outside nav2_bringup), if keepout:=true (default):
     filter_mask_server          map_server publishing maps/<world>_keepout on /keepout_filter_mask
@@ -140,6 +141,11 @@ def generate_launch_description():
             condition=IfCondition(keepout), output='screen'),
     ]
 
+    # Thins the depth camera's cloud for the costmaps' voxel layer (see depth_cloud_relay.py).
+    depth_relay = Node(
+        package='dc_robot', executable='depth_cloud_relay', name='depth_cloud_relay',
+        parameters=[{'use_sim_time': use_sim_time}], output='screen')
+
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
@@ -150,4 +156,5 @@ def generate_launch_description():
         output='screen',
     )
 
-    return LaunchDescription(args + [bringup] + slam_mode + keepout_nodes + [rviz_node])
+    return LaunchDescription(args + [bringup] + slam_mode + keepout_nodes
+                             + [depth_relay, rviz_node])

@@ -33,5 +33,7 @@ setup(
     description='dc_robot (data-centre robot): URDF, Gazebo worlds, SLAM and Nav2 configs.',
     license='MIT',
     tests_require=['pytest'],
-    entry_points={'console_scripts': []},
+    entry_points={'console_scripts': [
+        'depth_cloud_relay = dc_robot.depth_cloud_relay:main',
+    ]},
 )

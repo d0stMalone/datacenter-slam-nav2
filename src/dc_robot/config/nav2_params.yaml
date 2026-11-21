@@ -206,9 +206,14 @@ local_costmap:
       resolution: 0.05
       # TUNED: real rectangular footprint instead of robot_radius 0.22. base_link is near the
       # FRONT of the body, so a circle centred on it would be wrong at the back.
-      footprint: "[[0.13, 0.18], [0.13, -0.18], [-0.23, -0.18], [-0.23, 0.18]]"
+      # Front edge 0.13 -> 0.18 (camera mast + bumper margin). This also matters for planning:
+      # Theta* plans for a point kept "inscribed radius" (= nearest footprint edge, + padding)
+      # away from obstacles. With 0.13 that was 0.15 m < the 0.20 m half-width, so a 0.30 m gap
+      # beside a cart looked passable to the planner but not to the controller -> recovery loop.
+      footprint: "[[0.18, 0.18], [0.18, -0.18], [-0.23, -0.18], [-0.23, 0.18]]"
       footprint_padding: 0.02
-      plugins: ["obstacle_layer", "inflation_layer"]   # TUNED: 2D obstacle layer, 2D lidar needs no voxels
+      plugins: ["obstacle_layer", "voxel_layer", "inflation_layer"]
+      # Lidar: 2D obstacle layer (one scan plane 0.22 m above the floor).
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
@@ -219,9 +224,39 @@ local_costmap:
           clearing: True
           marking: True
           data_type: "LaserScan"
-          raytrace_max_range: 4.0     # TUNED: clear free space out to the window edge
+          raytrace_max_range: 4.0
           raytrace_min_range: 0.0
-          obstacle_max_range: 3.5     # TUNED
+          obstacle_max_range: 3.5
+          obstacle_min_range: 0.0
+      # Depth camera: 3D voxel layer, a SEPARATE layer so lidar beams never clear its marks.
+      # The lidar misses low things like a cart's bottom shelf (0.19-0.22 m, just under the
+      # scan plane) and sees only the cart's 4 thin legs; the camera sees the shelf. If both fed
+      # one layer, every lidar beam passing just over the shelf would erase the camera's mark.
+      # The camera's own rays clear in 3D, so a person who walks away is still removed.
+      # Heights are in the costmap frame: z = 0 is base_link (axle, 0.05 m above the floor).
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        publish_voxel_map: True
+        origin_z: 0.0
+        z_resolution: 0.025
+        z_voxels: 12                  # 12 x 2.5 cm = 0 .. 0.30 m: robot height + margin
+        max_obstacle_height: 0.30
+        mark_threshold: 0             # one marked voxel in a column = obstacle
+        observation_sources: depth
+        depth:
+          topic: /camera/points_xyz     # thinned by depth_cloud_relay (nav.launch.py)
+          min_obstacle_height: 0.02   # ignore the floor (z = -0.05) and its noise
+          max_obstacle_height: 0.30   # anything higher, the robot drives under
+          clearing: True
+          marking: True
+          data_type: "PointCloud2"
+          # Equal ranges on purpose: points between obstacle_max_range and raytrace_max_range
+          # would only CLEAR. Seen from 2.5-3 m, rays to a cart's far side erased its marks, so the
+          # planner flip-flopped between "blocked -> detour" and "free -> through the aisle".
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 3.0
           obstacle_min_range: 0.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
@@ -245,15 +280,20 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       use_sim_time: True
-      footprint: "[[0.13, 0.18], [0.13, -0.18], [-0.23, -0.18], [-0.23, 0.18]]"   # TUNED
-      footprint_padding: 0.02
+      footprint: "[[0.18, 0.18], [0.18, -0.18], [-0.23, -0.18], [-0.23, 0.18]]"   # TUNED
+      footprint_padding: 0.05       # TUNED 0.02 -> 0.05 (planner only; local keeps 0.02)
+      # Plan only through gaps >= 0.46 m (robot 0.36 m + 5 cm each side). With 0.02 a 0.40 m gap
+      # beside a cart was exactly on the edge: from scan to scan it looked open, then closed, the
+      # plan flipped between "squeeze past" and "detour" and the robot dithered in the aisle.
+      # The controller keeps the tighter 0.02, so it can still manoeuvre in narrow places.
       resolution: 0.05
       track_unknown_space: true
-      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      plugins: ["static_layer", "obstacle_layer", "voxel_layer", "inflation_layer"]
       static_layer:                   # the saved SLAM map, from map_server
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
-      obstacle_layer:                 # live lidar: things not in the map (e.g. a person)
+      # Lidar: 2D obstacle layer (one scan plane 0.22 m above the floor).
+      obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
         observation_sources: scan
@@ -263,9 +303,42 @@ global_costmap:
           clearing: True
           marking: True
           data_type: "LaserScan"
-          raytrace_max_range: 6.0     # TUNED
+          # TUNED: equal on purpose (was mark 5.0 / clear 6.0). Between the two ranges the lidar
+          # only CLEARS: a cart's legs 5-6 m away were erased, the aisle looked free, the robot
+          # drove in, at <5 m they were marked again, it turned back... and shuttled for 15 min.
+          raytrace_max_range: 6.0
           raytrace_min_range: 0.0
-          obstacle_max_range: 5.0     # TUNED
+          obstacle_max_range: 6.0
+          obstacle_min_range: 0.0
+      # Depth camera: 3D voxel layer, a SEPARATE layer so lidar beams never clear its marks.
+      # The lidar misses low things like a cart's bottom shelf (0.19-0.22 m, just under the
+      # scan plane) and sees only the cart's 4 thin legs; the camera sees the shelf. If both fed
+      # one layer, every lidar beam passing just over the shelf would erase the camera's mark.
+      # The camera's own rays clear in 3D, so a person who walks away is still removed.
+      # Heights are in the costmap frame: z = 0 is base_link (axle, 0.05 m above the floor).
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: True
+        publish_voxel_map: False
+        origin_z: 0.0
+        z_resolution: 0.025
+        z_voxels: 12                  # 12 x 2.5 cm = 0 .. 0.30 m: robot height + margin
+        max_obstacle_height: 0.30
+        mark_threshold: 0             # one marked voxel in a column = obstacle
+        observation_sources: depth
+        depth:
+          topic: /camera/points_xyz     # thinned by depth_cloud_relay (nav.launch.py)
+          min_obstacle_height: 0.02   # ignore the floor (z = -0.05) and its noise
+          max_obstacle_height: 0.30   # anything higher, the robot drives under
+          clearing: True
+          marking: True
+          data_type: "PointCloud2"
+          # Equal ranges on purpose: points between obstacle_max_range and raytrace_max_range
+          # would only CLEAR. Seen from 2.5-3 m, rays to a cart's far side erased its marks, so the
+          # planner flip-flopped between "blocked -> detour" and "free -> through the aisle".
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 3.0
           obstacle_min_range: 0.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  Sensors: 2D lidar and RGB camera. Each has a URDF link (for TF / RViz) and a Gazebo
+  Sensors: 2D lidar and RGB-D (depth) camera. Each has a URDF link (for TF / RViz) and a Gazebo
   <sensor> block whose ROS plugin publishes the data.
   Uses properties defined in dc_robot.urdf.xacro.
 -->
@@ -50,7 +50,10 @@
       <ray>
         <scan>
           <horizontal>
-            <samples>360</samples>           <!-- 1 degree resolution -->
+            <!-- 0.25 deg (like a Hokuyo UST-10LX). At 1 deg the beams are 7 cm apart at 4 m, so a
+                 cart's 3 cm legs were hit in some scans and missed in others (worst while turning):
+                 the costmap, and with it the plan, flipped between "aisle blocked" and "free". -->
+            <samples>1440</samples>
             <resolution>1</resolution>
             <min_angle>-3.14159</min_angle>
             <max_angle>3.14159</max_angle>
@@ -90,11 +93,33 @@
       <origin xyz="0 0 0"/>
     </xacro:inertial_box>
   </link>
+  <!--
+    Mounted on a short mast at the front, 0.32 m above the floor, tilted 20 deg down (like a
+    RealSense on a TurtleBot 4 / warehouse AMR). It was first on the chassis front at 0.12 m:
+    from there a cart's bottom shelf (0.19 m) is seen almost edge-on, only a few pixel rows
+    hit it, and the costmap got a thin line instead of the whole shelf. From above, the shelf's
+    top surface fills many pixels, and the tilt also shrinks the blind zone in front of the robot.
+  -->
+  <xacro:property name="camera_z" value="0.27"/>      <!-- above base_link (axle, 0.05 m) -->
+  <xacro:property name="camera_tilt" value="0.35"/>   <!-- rad, ~20 deg down -->
+  <xacro:property name="camera_x" value="${chassis_offset_x + chassis_length/2 + 0.01}"/>
   <joint name="camera_joint" type="fixed">
     <parent link="base_link"/>
     <child link="camera_link"/>
-    <!-- On the front face of the chassis -->
-    <origin xyz="${chassis_offset_x + chassis_length/2 + 0.01} 0 ${chassis_height * 0.7}"/>
+    <origin xyz="${camera_x} 0 ${camera_z}" rpy="0 ${camera_tilt} 0"/>
+  </joint>
+
+  <!-- Mast: visual only. It crosses the lidar's scan plane; a collision would be hit by the rays. -->
+  <link name="camera_mast">
+    <visual>
+      <geometry><cylinder radius="0.008" length="${camera_z - chassis_height - 0.015}"/></geometry>
+      <material name="grey"/>
+    </visual>
+  </link>
+  <joint name="camera_mast_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_mast"/>
+    <origin xyz="${camera_x - 0.01} 0 ${(camera_z + chassis_height - 0.015) / 2}"/>
   </joint>
 
   <!--
@@ -110,26 +135,34 @@
     <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
   </joint>
 
+  <!--
+    RGB-D camera (like an Intel RealSense D435). The 2D lidar only sees a thin slice 0.22 m
+    above the floor, so it misses things like the bottom shelf of a cart (0.19-0.22 m) and
+    treats the 0.44 m gap between the cart's legs as free. The depth camera fills that gap:
+    its point cloud goes into the costmaps' 3D voxel layer (config/nav2_params.yaml).
+    Topics: /camera/image_raw (colour), /camera/depth/image_raw, /camera/points.
+  -->
   <gazebo reference="camera_link">
     <material>Gazebo/Blue</material>
-    <sensor name="camera" type="camera">
+    <sensor name="camera" type="depth">
       <always_on>true</always_on>
-      <update_rate>15</update_rate>
+      <update_rate>10</update_rate>
       <camera>
-        <horizontal_fov>1.089</horizontal_fov>   <!-- ~62 deg -->
+        <horizontal_fov>1.518</horizontal_fov>   <!-- 87 deg, as a D435 depth module -->
         <image>
-          <width>640</width>
-          <height>480</height>
+          <width>160</width>                      <!-- low res: plenty for a 5 cm costmap, cheap to render -->
+          <height>120</height>
           <format>R8G8B8</format>
         </image>
         <clip>
-          <near>0.05</near>
-          <far>10.0</far>
+          <near>0.1</near>
+          <far>8.0</far>
         </clip>
       </camera>
       <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-        <!-- Publishes /camera/image_raw and /camera/camera_info -->
         <frame_name>camera_optical_link</frame_name>
+        <min_depth>0.1</min_depth>
+        <max_depth>8.0</max_depth>
       </plugin>
     </sensor>
   </gazebo>
