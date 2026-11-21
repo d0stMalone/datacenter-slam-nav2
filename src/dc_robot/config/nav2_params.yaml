@@ -16,10 +16,13 @@ amcl:
     # --- Motion model: how much the particles are spread by each odometry step. ---
     # alpha1: rotation noise from rotation, alpha2: rotation noise from translation,
     # alpha3: translation noise from translation, alpha4: translation noise from rotation.
-    alpha1: 0.1               # TUNED 0.2 -> 0.1: odometry is accurate since the sphere-wheel fix (<0.1 deg/90 deg)
-    alpha2: 0.1               # TUNED
-    alpha3: 0.1               # TUNED
-    alpha4: 0.1               # TUNED
+    # TUNED 0.2 -> 0.05: odometry is very accurate (<1 cm drift over 30 m in sim). With more
+    # noise the particle cloud spreads several metres and part of it ends up in the
+    # neighbouring, identical-looking aisle; AMCL can then jump there.
+    alpha1: 0.05              # TUNED
+    alpha2: 0.05              # TUNED 0.2 -> 0.05
+    alpha3: 0.05              # TUNED 0.2 -> 0.05
+    alpha4: 0.05              # TUNED 0.2 -> 0.05
     alpha5: 0.2               # only used by the omni model
     base_frame_id: "base_link"        # TUNED: our URDF root (no separate base_footprint parent)
     global_frame_id: "map"
@@ -33,10 +36,10 @@ amcl:
     laser_max_range: 12.0             # TUNED 100 -> 12: our lidar's real max range
     laser_min_range: 0.12             # TUNED -1 -> 0.12: our lidar's min range
     laser_likelihood_max_dist: 2.0
-    max_beams: 60                     # 60 of the 360 beams per update: plenty, and cheap
+    max_beams: 120                    # TUNED 60 -> 120: more evidence per update in repetitive aisles
     sigma_hit: 0.2
-    z_hit: 0.5
-    z_rand: 0.5
+    z_hit: 0.8                        # TUNED 0.5 -> 0.8 and z_rand 0.5 -> 0.2: trust the lidar more,
+    z_rand: 0.2                       # so the particle cloud stays tight instead of drifting into another aisle
     z_max: 0.05
     z_short: 0.05
     lambda_short: 0.1
